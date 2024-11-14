@@ -5,17 +5,11 @@ from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
 
 
-# url = "https://tululu.org/txt.php?id=32168"
-# response = requests.get(url)
-# response.raise_for_status() 
-
-# filename = 'books/peski_marsa.txt'
-
-# with open(filename, 'wb') as file:
-#     file.write(response.content)
-
 if os.path.exists('books') == False:
     os.mkdir('books')
+
+if os.path.exists('images') == False:
+    os.mkdir('images')
 
 
 def check_for_redirect(response):    
@@ -27,6 +21,13 @@ def download_txt(response, filename, folder='books/'):
     file_path = os.path.join(folder, filename)
     with open(file_path, 'wb') as file:
         file.write(response.content)
+
+
+def download_image(book_image_url, filename, folder='images/'):
+    img_response = requests.get(book_image_url)
+    file_path = os.path.join(folder, filename)
+    with open(file_path, 'wb') as file:
+        file.write(img_response.content)
 
 
 for i in range(1, 11):
@@ -41,17 +42,16 @@ for i in range(1, 11):
         title_name = soup.find(id='content').find('h1').text
         title_name = title_name.split(' :: ')
         title_name = sanitize_filename(title_name[0].strip())
-        book_titles_image = soup.find('table', class_='d_book').find('img')['src']
-        book_titles_image_url = urljoin(book_url, book_titles_image)
-
-        print(title_name)
-        print(book_titles_image_url)
-
 
         # response = requests.get(download_url)
         # response.raise_for_status()
         # check_for_redirect(response)
         # download_txt(response, f'{title_name}.txt')
+
+        book_titles_image = soup.find('table', class_='d_book').find('img')['src']
+        book_image_url = urljoin(book_url, book_titles_image)
+        
+        download_image(book_image_url, f'{i}.jpg')
     except requests.HTTPError:
         print("Встречена ошибка requests.HTTPError")
 
