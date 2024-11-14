@@ -2,6 +2,7 @@ import requests
 import os
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
+from urllib.parse import urljoin
 
 
 # url = "https://tululu.org/txt.php?id=32168"
@@ -40,12 +41,17 @@ for i in range(1, 11):
         title_name = soup.find(id='content').find('h1').text
         title_name = title_name.split(' :: ')
         title_name = sanitize_filename(title_name[0].strip())
-        print(title_name)
+        book_titles_image = soup.find('table', class_='d_book').find('img')['src']
+        book_titles_image_url = urljoin(book_url, book_titles_image)
 
-        response = requests.get(download_url)
-        response.raise_for_status()
-        check_for_redirect(response)
-        download_txt(response, f'{title_name}.txt')
+        print(title_name)
+        print(book_titles_image_url)
+
+
+        # response = requests.get(download_url)
+        # response.raise_for_status()
+        # check_for_redirect(response)
+        # download_txt(response, f'{title_name}.txt')
     except requests.HTTPError:
         print("Встречена ошибка requests.HTTPError")
 
