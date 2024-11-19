@@ -12,6 +12,9 @@ if os.path.exists('images') == False:
     os.mkdir('images')
 
 
+comments_list = []
+
+
 def check_for_redirect(response):    
     if response.history:
         raise requests.HTTPError
@@ -43,15 +46,23 @@ for i in range(1, 11):
         title_name = title_name.split(' :: ')
         title_name = sanitize_filename(title_name[0].strip())
 
-        # response = requests.get(download_url)
-        # response.raise_for_status()
-        # check_for_redirect(response)
-        # download_txt(response, f'{title_name}.txt')
+        comments = soup.find_all("div", class_='texts')
+        for comment in comments:
+            comments_list.append(comment.find(class_='black').text)
+            if i == 10:
+                for com_from_list in comments_list:
+                    print(com_from_list)
+
+        
+        response = requests.get(download_url)
+        response.raise_for_status()
+        check_for_redirect(response)
+        download_txt(response, f'{title_name}.txt')
 
         book_titles_image = soup.find('table', class_='d_book').find('img')['src']
         book_image_url = urljoin(book_url, book_titles_image)
-        
         download_image(book_image_url, f'{i}.jpg')
+        
     except requests.HTTPError:
         print("Встречена ошибка requests.HTTPError")
 
