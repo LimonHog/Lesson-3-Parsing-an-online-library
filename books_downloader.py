@@ -45,23 +45,29 @@ for i in range(1, 11):
         title_name = soup.find(id='content').find('h1').text
         title_name = title_name.split(' :: ')
         title_name = sanitize_filename(title_name[0].strip())
+        print(f'\n{title_name}')
 
-        comments = soup.find_all("div", class_='texts')
-        for comment in comments:
-            comments_list.append(comment.find(class_='black').text)
-            if i == 10:
-                for com_from_list in comments_list:
-                    print(com_from_list)
+        # comments = soup.find_all("div", class_='texts')
+        # for comment in comments:
+        #     comments_list.append(comment.find(class_='black').text)
+        #     if i == 10:
+        #         for com_from_list in comments_list:
+        #             print(com_from_list)
 
+
+        genres = soup.find_all('span', class_='d_book')
+        for genre in genres:
+            genre = genre.find('a').text
+            print(genre)
         
-        response = requests.get(download_url)
-        response.raise_for_status()
-        check_for_redirect(response)
-        download_txt(response, f'{title_name}.txt')
+        # response = requests.get(download_url)
+        # response.raise_for_status()
+        # check_for_redirect(response)
+        # download_txt(response, f'{title_name}.txt')
 
-        book_titles_image = soup.find('table', class_='d_book').find('img')['src']
-        book_image_url = urljoin(book_url, book_titles_image)
-        download_image(book_image_url, f'{i}.jpg')
+        # book_titles_image = soup.find('table', class_='d_book').find('img')['src']
+        # book_image_url = urljoin(book_url, book_titles_image)
+        # download_image(book_image_url, f'{i}.jpg')
         
     except requests.HTTPError:
         print("Встречена ошибка requests.HTTPError")
