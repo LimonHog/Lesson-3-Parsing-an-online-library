@@ -33,6 +33,43 @@ def download_image(book_image_url, filename, folder='images/'):
         file.write(img_response.content)
 
 
+def parse_book_page(soup, title, image):
+
+    comments = soup.find_all("div", class_='texts')
+    coms = []
+    for comment in comments:
+        comment = comment.find_all(class_='black')
+        for com in comment:
+            coms.append(com.text)
+    
+    rating = soup.find(id=f'unit_long{i}').find('span').find('strong').text
+
+    genres = soup.find_all('span', class_='d_book')
+    genre_list = []
+    for genre in genres:
+        genre = genre.find_all('a')
+        for gen in genre:  
+            genre_list.append(gen.text)
+            
+
+
+    book_title = sanitize_filename(title[0].strip())
+    book_author = sanitize_filename(title[1].strip())
+    
+    book_info = {
+        'Название': book_title,
+        'Автор': book_author,
+        'Жанр(ы)': genre_list,
+        'Ссылка на изображение': image,
+        'Рейтинг': f'{rating}/5'
+        'Коментарии': coms
+    }
+
+    # print(book_info)
+    
+
+
+
 for i in range(1, 11):
 
     download_url = f"https://tululu.org/txt.php?id={i}"
@@ -42,32 +79,22 @@ for i in range(1, 11):
         response.raise_for_status() 
         check_for_redirect(response)
         soup = BeautifulSoup(response.text, 'lxml')
-        title_name = soup.find(id='content').find('h1').text
-        title_name = title_name.split(' :: ')
-        title_name = sanitize_filename(title_name[0].strip())
-        print(f'\n{title_name}')
-
-        # comments = soup.find_all("div", class_='texts')
-        # for comment in comments:
-        #     comments_list.append(comment.find(class_='black').text)
-        #     if i == 10:
-        #         for com_from_list in comments_list:
-        #             print(com_from_list)
-
-
-        genres = soup.find_all('span', class_='d_book')
-        for genre in genres:
-            genre = genre.find('a').text
-            print(genre)
+        title = soup.find(id='content').find('h1').text
+        title = title.split(' :: ')
+        title_name = sanitize_filename(title[0].strip()) 
         
-        # response = requests.get(download_url)
-        # response.raise_for_status()
-        # check_for_redirect(response)
-        # download_txt(response, f'{title_name}.txt')
+        response = requests.get(download_url)
+        response.raise_for_status()
+        check_for_redirect(response)
+        download_txt(response, f'{title_name}.txt')
 
-        # book_titles_image = soup.find('table', class_='d_book').find('img')['src']
-        # book_image_url = urljoin(book_url, book_titles_image)
-        # download_image(book_image_url, f'{i}.jpg')
+        book_titles_image = soup.find('table', class_='d_book').find('img')['src']
+        book_image_url = urljoin(book_url, book_titles_image)
+        download_image(book_image_url, f'{i}.jpg')
+
+        
+
+        parse_book_page(soup, title, book_image_url)
         
     except requests.HTTPError:
         print("Встречена ошибка requests.HTTPError")
