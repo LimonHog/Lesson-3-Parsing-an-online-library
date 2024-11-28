@@ -61,11 +61,11 @@ def parse_book_page(soup, title, image):
         'Автор': book_author,
         'Жанр(ы)': genre_list,
         'Ссылка на изображение': image,
-        'Рейтинг': f'{rating}/5'
+        'Рейтинг': f'{rating}/5',
         'Коментарии': coms
     }
 
-    # print(book_info)
+    print(book_info)
     
 
 
