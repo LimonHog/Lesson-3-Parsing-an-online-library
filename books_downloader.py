@@ -3,6 +3,7 @@ import os
 from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
+import argparse
 
 
 if os.path.exists('books') == False:
@@ -50,8 +51,6 @@ def parse_book_page(soup, title, image):
         genre = genre.find_all('a')
         for gen in genre:  
             genre_list.append(gen.text)
-            
-
 
     book_title = sanitize_filename(title[0].strip())
     book_author = sanitize_filename(title[1].strip())
@@ -68,9 +67,13 @@ def parse_book_page(soup, title, image):
     print(book_info)
     
 
+parser = argparse.ArgumentParser(description='Скачивает книги и изображения их обложек; а также получает другую информацию о книгах')
+parser.add_argument('--start_id', type=int, default=1, help='ID первой книги')
+parser.add_argument('--end_id', type=int, default=10, help='ID второй книги')
+args = parser.parse_args()
 
 
-for i in range(1, 11):
+for i in range(args.start_id, args.end_id+1):
 
     download_url = f"https://tululu.org/txt.php?id={i}"
     book_url = f"https://tululu.org/b{i}/"
