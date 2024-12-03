@@ -6,16 +6,6 @@ from urllib.parse import urljoin
 import argparse
 
 
-if os.path.exists('books') == False:
-    os.mkdir('books')
-
-if os.path.exists('images') == False:
-    os.mkdir('images')
-
-
-comments_list = []
-
-
 def check_for_redirect(response):    
     if response.history:
         raise requests.HTTPError
@@ -34,7 +24,7 @@ def download_image(book_image_url, filename, folder='images/'):
         file.write(img_response.content)
 
 
-def parse_book_page(soup, title, image):
+def parse_book_page(i, soup, title, image):
 
     comments = soup.find_all("div", class_='texts')
     coms = []
@@ -67,63 +57,47 @@ def parse_book_page(soup, title, image):
     print(book_info)
     
 
-parser = argparse.ArgumentParser(description='Скачивает книги и изображения их обложек; а также получает другую информацию о книгах')
-parser.add_argument('--start_id', type=int, default=1, help='ID первой книги')
-parser.add_argument('--end_id', type=int, default=10, help='ID второй книги')
-args = parser.parse_args()
+def main():
+
+    if os.path.exists('books') == False:
+        os.mkdir('books')
+
+    if os.path.exists('images') == False:
+        os.mkdir('images')
 
 
-for i in range(args.start_id, args.end_id+1):
+    parser = argparse.ArgumentParser(description='Скачивает книги и изображения их обложек; а также получает другую информацию о книгах')
+    parser.add_argument('--start_id', type=int, default=1, help='ID первой книги')
+    parser.add_argument('--end_id', type=int, default=10, help='ID второй книги')
+    args = parser.parse_args()
 
-    download_url = f"https://tululu.org/txt.php?id={i}"
-    book_url = f"https://tululu.org/b{i}/"
-    try:
-        response = requests.get(book_url)
-        response.raise_for_status() 
-        check_for_redirect(response)
-        soup = BeautifulSoup(response.text, 'lxml')
-        title = soup.find(id='content').find('h1').text
-        title = title.split(' :: ')
-        title_name = sanitize_filename(title[0].strip()) 
-        
-        response = requests.get(download_url)
-        response.raise_for_status()
-        check_for_redirect(response)
-        download_txt(response, f'{title_name}.txt')
+    for i in range(args.start_id, args.end_id+1):
 
-        book_titles_image = soup.find('table', class_='d_book').find('img')['src']
-        book_image_url = urljoin(book_url, book_titles_image)
-        download_image(book_image_url, f'{i}.jpg')
+        download_url = f"https://tululu.org/txt.php?id={i}"
+        book_url = f"https://tululu.org/b{i}/"
+        try:
+            response = requests.get(book_url)
+            response.raise_for_status() 
+            check_for_redirect(response)
+            soup = BeautifulSoup(response.text, 'lxml')
+            title = soup.find(id='content').find('h1').text
+            title = title.split(' :: ')
+            title_name = sanitize_filename(title[0].strip()) 
 
-        
+            book_titles_image = soup.find('table', class_='d_book').find('img')['src']
+            book_image_url = urljoin(book_url, book_titles_image)
+            download_image(book_image_url, f'{i}.jpg')
 
-        parse_book_page(soup, title, book_image_url)
-        
-    except requests.HTTPError:
-        print("Встречена ошибка requests.HTTPError")
+            response = requests.get(download_url)
+            response.raise_for_status()
+            check_for_redirect(response)
+            download_txt(response, f'{title_name}.txt')
 
-
-# url = 'http://tululu.org/b1/'
-# response = requests.get(url)
-# response.raise_for_status()
-
-# soup = BeautifulSoup(response.text, 'lxml')
-# id1_title = soup.find(id='content').find('h1').text
-# id1_title = id1_title.split('::')
-# print("Название:", id1_title[0],  "\\\nАвтор:", id1_title[1])
+            parse_book_page(i, soup, title, book_image_url)
+            
+        except requests.HTTPError:
+            print("Встречена ошибка requests.HTTPError")
 
 
-
-
-# url = 'http://tululu.org/txt.php?id=1'
-# response = requests.get(url)
-# response.raise_for_status() 
-
-# download_txt(response, 'Алиби.txt')
-# url = "https://tululu.org/b3/"
-# response = requests.get(url)
-# response.raise_for_status() 
-# check_for_redirect(response)
-# soup = BeautifulSoup(response.text, 'lxml')
-# title_name = soup.find('div', id='content').find('h1')
-# print(title_name)
+if __name__ == "__main__":
+    main()
