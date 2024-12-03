@@ -14,7 +14,7 @@ title_tag = soup.find('main').find('header').find('h1')
 title_text = title_tag.text #только текст
 print(title_text)
 
-print(soup.find('img', class_='attachment-post-image'))#картинка
-print(soup.find('img', class_='attachment-post-image')['src'])#ссылка на картинку
+print(soup.find('img', class_='attachment-post-image'))
+print(soup.find('img', class_='attachment-post-image')['src'])
 post_text = soup.find('div', class_='entry-content').text
 print(post_text)
