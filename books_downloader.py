@@ -24,7 +24,8 @@ def download_image(book_image_url, filename, folder='images/'):
         file.write(img_response.content)
 
 
-def parse_book_page(id_number, soup, title, image):
+def parse_book_page(response):
+    soup = BeautifulSoup(response.text, 'lxml')
 
     comments = soup.find_all("div", class_='texts')
     coms = []
@@ -33,7 +34,6 @@ def parse_book_page(id_number, soup, title, image):
         for com in comment:
             coms.append(com.text)
     
-    rating = soup.find(id=f'unit_long{id_number}').find('span').find('strong').text
 
     genres = soup.find_all('span', class_='d_book')
     genre_list = []
@@ -42,19 +42,24 @@ def parse_book_page(id_number, soup, title, image):
         for link in genre_links:  
             genre_list.append(link.text)
 
+    
+    title = soup.find(id='content').find('h1').text
+    title = title.split(' :: ')
+
+    book_titles_image = soup.find('table', class_='d_book').find('img')['src']
+
     book_title = sanitize_filename(title[0].strip())
     book_author = sanitize_filename(title[1].strip())
     
     book_info = {
-        'Название': book_title,
-        'Автор': book_author,
-        'Жанр(ы)': genre_list,
-        'Ссылка на изображение': image,
-        'Рейтинг': f'{rating}/5',
-        'Коментарии': coms
+        'Title': book_title,
+        'Author': book_author,
+        'Genres': genre_list,
+        'Image_url': book_titles_image,
+        'Comments': coms
     }
 
-    print(book_info)
+    return(book_info)
     
 
 def main():
@@ -77,21 +82,15 @@ def main():
             response = requests.get(book_url,  params=params)
             response.raise_for_status() 
             check_for_redirect(response)
-            soup = BeautifulSoup(response.text, 'lxml')
-            title = soup.find(id='content').find('h1').text
-            title = title.split(' :: ')
-            title_name = sanitize_filename(title[0].strip()) 
+            book_params = parse_book_page(response)
 
-            book_titles_image = soup.find('table', class_='d_book').find('img')['src']
-            book_image_url = urljoin(book_url, book_titles_image)
+            book_image_url = urljoin(book_url, book_params['Image_url'])
             download_image(book_image_url, f'{id_number}.jpg')
 
             response = requests.get(download_url,  params=params)
             response.raise_for_status()
             check_for_redirect(response)
-            download_txt(response, f'{title_name}.txt')
-
-            parse_book_page(id_number, soup, title, book_image_url)
+            download_txt(response, f'{book_params['Title']}.txt')
             
         except requests.HTTPError:
             print("Встречена ошибка requests.HTTPError")
