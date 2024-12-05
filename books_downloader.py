@@ -35,12 +35,12 @@ def parse_book_page(response):
             coms.append(com.text)
     
 
-    genres = soup.find_all('span', class_='d_book')
-    genre_list = []
-    for genre in genres:
+    all_genres = soup.find_all('span', class_='d_book')
+    genres = []
+    for genre in all_genres:
         genre_links = genre.find_all('a')
         for link in genre_links:  
-            genre_list.append(link.text)
+            genres.append(link.text)
 
     
     title = soup.find(id='content').find('h1').text
@@ -54,7 +54,7 @@ def parse_book_page(response):
     book_info = {
         'Title': book_title,
         'Author': book_author,
-        'Genres': genre_list,
+        'Genres': genres,
         'Image_url': book_titles_image,
         'Comments': coms
     }
