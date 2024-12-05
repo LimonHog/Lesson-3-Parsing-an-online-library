@@ -59,12 +59,8 @@ def parse_book_page(i, soup, title, image):
 
 def main():
 
-    if os.path.exists('books') == False:
-        os.mkdir('books')
-
-    if os.path.exists('images') == False:
-        os.mkdir('images')
-
+    os.makedirs('books', exist_ok='False')
+    os.makedirs('images', exist_ok='False')
 
     parser = argparse.ArgumentParser(description='Скачивает книги и изображения их обложек; а также получает другую информацию о книгах')
     parser.add_argument('--start_id', type=int, default=1, help='ID первой книги')
