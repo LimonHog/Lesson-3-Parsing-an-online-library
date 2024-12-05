@@ -24,7 +24,7 @@ def download_image(book_image_url, filename, folder='images/'):
         file.write(img_response.content)
 
 
-def parse_book_page(i, soup, title, image):
+def parse_book_page(id_number, soup, title, image):
 
     comments = soup.find_all("div", class_='texts')
     coms = []
@@ -33,14 +33,14 @@ def parse_book_page(i, soup, title, image):
         for com in comment:
             coms.append(com.text)
     
-    rating = soup.find(id=f'unit_long{i}').find('span').find('strong').text
+    rating = soup.find(id=f'unit_long{id_number}').find('span').find('strong').text
 
     genres = soup.find_all('span', class_='d_book')
     genre_list = []
     for genre in genres:
-        genre = genre.find_all('a')
-        for gen in genre:  
-            genre_list.append(gen.text)
+        genre_links = genre.find_all('a')
+        for link in genre_links:  
+            genre_list.append(link.text)
 
     book_title = sanitize_filename(title[0].strip())
     book_author = sanitize_filename(title[1].strip())
@@ -67,10 +67,10 @@ def main():
     parser.add_argument('--end_id', type=int, default=10, help='ID второй книги')
     args = parser.parse_args()
 
-    for i in range(args.start_id, args.end_id+1):
+    for id_number in range(args.start_id, args.end_id+1):
 
-        download_url = f"https://tululu.org/txt.php?id={i}"
-        book_url = f"https://tululu.org/b{i}/"
+        download_url = f"https://tululu.org/txt.php?id={id_number}"
+        book_url = f"https://tululu.org/b{id_number}/"
         try:
             response = requests.get(book_url)
             response.raise_for_status() 
@@ -82,14 +82,14 @@ def main():
 
             book_titles_image = soup.find('table', class_='d_book').find('img')['src']
             book_image_url = urljoin(book_url, book_titles_image)
-            download_image(book_image_url, f'{i}.jpg')
+            download_image(book_image_url, f'{id_number}.jpg')
 
             response = requests.get(download_url)
             response.raise_for_status()
             check_for_redirect(response)
             download_txt(response, f'{title_name}.txt')
 
-            parse_book_page(i, soup, title, book_image_url)
+            parse_book_page(id_number, soup, title, book_image_url)
             
         except requests.HTTPError:
             print("Встречена ошибка requests.HTTPError")
