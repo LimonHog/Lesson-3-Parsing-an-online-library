@@ -69,10 +69,12 @@ def main():
 
     for id_number in range(args.start_id, args.end_id+1):
 
-        download_url = f"https://tululu.org/txt.php?id={id_number}"
+        params = {'id': id_number}
+
+        download_url = f"https://tululu.org/txt.php"
         book_url = f"https://tululu.org/b{id_number}/"
         try:
-            response = requests.get(book_url)
+            response = requests.get(book_url,  params=params)
             response.raise_for_status() 
             check_for_redirect(response)
             soup = BeautifulSoup(response.text, 'lxml')
@@ -84,7 +86,7 @@ def main():
             book_image_url = urljoin(book_url, book_titles_image)
             download_image(book_image_url, f'{id_number}.jpg')
 
-            response = requests.get(download_url)
+            response = requests.get(download_url,  params=params)
             response.raise_for_status()
             check_for_redirect(response)
             download_txt(response, f'{title_name}.txt')
