@@ -41,7 +41,7 @@ def parse_book_page(response):
     book_title = sanitize_filename(title[0].strip())
     book_author = sanitize_filename(title[1].strip())
     
-    book_info = {
+    book_facts = {
         'Title': book_title,
         'Author': book_author,
         'Genres': genres,
@@ -49,7 +49,7 @@ def parse_book_page(response):
         'Comments': coms
     }
     
-    return(book_info)
+    return(book_facts)
     
 
 def main():
