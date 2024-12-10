@@ -28,20 +28,10 @@ def parse_book_page(response):
     soup = BeautifulSoup(response.text, 'lxml')
 
     comments = soup.find_all("div", class_='texts')
-    coms = []
-    for comment in comments:
-        comment = comment.find_all(class_='black')
-        for com in comment:
-            coms.append(com.text)
-    
+    coms = [comment.find(class_="black").text for comment in comments]
 
-    all_genres = soup.find_all('span', class_='d_book')
-    genres = []
-    for genre in all_genres:
-        genre_links = genre.find_all('a')
-        for link in genre_links:  
-            genres.append(link.text)
-
+    all_genres = soup.find_all('span', class_='d_book')[0].find_all('a')
+    genres = [genre.text for genre in all_genres]
     
     title = soup.find(id='content').find('h1').text
     title = title.split(' :: ')
@@ -58,7 +48,7 @@ def parse_book_page(response):
         'Image_url': book_titles_image,
         'Comments': coms
     }
-
+    
     return(book_info)
     
 
@@ -93,7 +83,7 @@ def main():
             download_txt(response, f'{book_params['Title']}.txt')
             
         except requests.HTTPError:
-            print("Встречена ошибка requests.HTTPError")
+            print("Такой книги нет")
 
 
 if __name__ == "__main__":
