@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from pathvalidate import sanitize_filename
 from urllib.parse import urljoin
 import argparse
+import time
 
 
 def check_for_redirect(response):    
@@ -84,6 +85,10 @@ def main():
             
         except requests.HTTPError:
             print("Такой книги нет")
+
+        except requests.ConnectionError:
+            print('Разорвано соединение')
+            time.sleep(5)
 
 
 if __name__ == "__main__":
